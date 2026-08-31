@@ -80,6 +80,11 @@ class Ydb
     protected $table;
 
     /**
+     * @var View
+     */
+    protected $view;
+
+    /**
      * @var Operations
      */
     protected $operations;
@@ -341,6 +346,19 @@ class Ydb
         }
 
         return $this->scheme;
+    }
+
+    /**
+     * @return View
+     */
+    public function view()
+    {
+        if (!isset($this->view))
+        {
+            $this->view = new View($this, $this->logger);
+        }
+
+        return $this->view;
     }
 
     /**

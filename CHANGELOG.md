@@ -1,3 +1,5 @@
+* added `Ydb::view()`/`View::describeView()`, wrapping the draft `Ydb.View.V1.ViewService.DescribeView` RPC (see `ydb-api-protos`' `draft/protos/ydb_view.proto`) to fetch a view's SQL definition text; note this RPC isn't implemented on every YDB build yet (verified: `cr.yandex/yc/yandex-docker-local-ydb` currently replies gRPC UNIMPLEMENTED for it even with `enable_views` on) - the client is ready for servers that do support it
+
 ## 1.16.3
 * improve log
 
