@@ -42,6 +42,7 @@ class StaticAuthentication extends IamAuth implements UseConfigInterface
     public function setYdbConnectionConfig(array $config)
     {
         unset($config['credentials']);
+        unset($config['logger']);
         $config['credentials'] = new AnonymousAuthentication();
         $this->ydb = new Ydb($config, $this->logger);
     }

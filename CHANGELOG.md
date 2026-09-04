@@ -1,3 +1,5 @@
+* fixed `Exception: Logger set in 2 places` when using `StaticAuthentication` with any configured logger - `setYdbConnectionConfig()` built its nested `Ydb` instance from a `$config` that still had `logger` set *and* passed `$this->logger` as the constructor's second argument, tripping `Ydb`'s own guard against specifying a logger twice even though the caller only set it once.
+
 ## 1.16.3
 * improve log
 
