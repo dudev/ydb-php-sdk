@@ -4,6 +4,7 @@
 * fixed `DECLARE $x AS T?;` (the short YQL form of `Optional<T>`) throwing "Unknown type" client-side instead of being accepted like `Optional<T>`
 * regenerated `Ydb\Table\ColumnMeta` and other `Ydb.Table.*` messages from an up-to-date `ydb-api-protos` checkout; `DescribeTable` can now report a column's `not_null` flag and default value (including `Serial`/`BigSerial` sequence info via `from_sequence`), which the stale generated code silently dropped before
 * fixed `Uuid` values being written/read incorrectly - writing went through `StringType` (wrong wire type entirely, `STRING` instead of `UUID`, raw dashed text as `bytes_value`) and reading only looked at `low_128` via `dechex()`, discarding `high_128` and mangling byte order. Added `Types\UuidType`, matching the `low_128`/`high_128` split ("bytes_le") convention the official SDKs use, verified against a real server response.
+* added `YdbQuery::beginTx($mode, bool $commit = true)` - passing `$commit = false` leaves the transaction open instead of always committing right after that one query; `Session::executeQuery()` now picks up the resulting transaction id from the response, so a following `Session::query()`/`commitTransaction()`/`rollbackTransaction()` call continues and closes it, the same way `Session::beginTransaction()` already does. Default behavior (`beginTx($mode)`, no second argument) is unchanged.
 
 ## 1.16.3
 * improve log
