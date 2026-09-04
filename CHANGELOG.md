@@ -3,6 +3,7 @@
 * fixed `Session::commitTransaction()`/`rollbackTransaction()` leaving `tx_id` stuck on a dead transaction when their own `CommitTransaction`/`RollbackTransaction` RPC call fails (which happens precisely when the transaction is already aborted server-side - exactly the case a caller is recovering from by calling `commit()`/`rollBack()`) - previously this left the session permanently reusing that dead transaction id, so every later query on it failed with "Transaction not found" regardless of whether it had anything to do with the original error
 * fixed `DECLARE $x AS T?;` (the short YQL form of `Optional<T>`) throwing "Unknown type" client-side instead of being accepted like `Optional<T>`
 * regenerated `Ydb\Table\ColumnMeta` and other `Ydb.Table.*` messages from an up-to-date `ydb-api-protos` checkout; `DescribeTable` can now report a column's `not_null` flag and default value (including `Serial`/`BigSerial` sequence info via `from_sequence`), which the stale generated code silently dropped before
+* fixed `Uuid` values being written/read incorrectly - writing went through `StringType` (wrong wire type entirely, `STRING` instead of `UUID`, raw dashed text as `bytes_value`) and reading only looked at `low_128` via `dechex()`, discarding `high_128` and mangling byte order. Added `Types\UuidType`, matching the `low_128`/`high_128` split ("bytes_le") convention the official SDKs use, verified against a real server response.
 
 ## 1.16.3
 * improve log
