@@ -1,3 +1,5 @@
+* fixed `Decimal` values being written/read incorrectly - `Types\DecimalType` wrote as `STRING`/`bytes_value` (not a real `Decimal` value at all) and `QueryResult` never recognized a `decimalType` column, so it silently fell through to the raw, unscaled `low128` half. Also fixed `normalizeValue()` casting to `(float)`, which lost precision for values with more significant digits than a double can represent exactly. Added string-based `DECLARE $x AS Decimal(p,s);` support to `valueOfType()` alongside the existing compositional `DecimalType` API. Also fixed `toParts()` silently truncating (instead of rounding) input with more fractional digits than the declared scale, and depending on PHP's ambient `bcscale()` setting to do it - it now rounds half away from zero at an explicit scale, independent of process-wide bcmath state. Note: this local YDB build only accepts `Decimal(22,9)` for table columns - other precision/scale pairs may be rejected server-side regardless of this fix.
+
 ## 1.16.3
 * improve log
 
