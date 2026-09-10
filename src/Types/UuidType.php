@@ -10,6 +10,9 @@ use YdbPlatform\Ydb\Exception;
 
 class UuidType extends AbstractType
 {
+    // 2^64, for folding an unsigned 64-bit half into its signed bit pattern.
+    private const TWO_POW_64 = '18446744073709551616';
+
     /**
      * @var string
      */
@@ -118,6 +121,6 @@ class UuidType extends AbstractType
             return (int) $value;
         }
 
-        return (int) bcsub((string) $value, '18446744073709551616');
+        return (int) bcsub((string) $value, self::TWO_POW_64);
     }
 }
