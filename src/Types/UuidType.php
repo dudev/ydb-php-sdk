@@ -121,6 +121,6 @@ class UuidType extends AbstractType
             return (int) $value;
         }
 
-        return (int) bcsub((string) $value, self::TWO_POW_64);
+        return (int) bcsub((string) $value, self::TWO_POW_64, 0);
     }
 }
