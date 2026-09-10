@@ -185,8 +185,8 @@ class DecimalType extends AbstractType
             return (int) $value;
         }
 
-        // Above PHP_INT_MAX (bit 63 set): subtract 2^64 to get the same bit pattern as a signed int.
-        return (int) bcsub((string) $value, self::TWO_POW_64);
+        // Above PHP_INT_MAX (bit 63 set): subtract 2^64 (at an explicit scale, ignoring ambient bcscale()).
+        return (int) bcsub((string) $value, self::TWO_POW_64, 0);
     }
 
     /**
@@ -199,8 +199,8 @@ class DecimalType extends AbstractType
     {
         if (bccomp((string) $value, '0') < 0)
         {
-            // Negative (bit 63 set): add 2^64 back to recover the unsigned value.
-            return bcadd((string) $value, self::TWO_POW_64);
+            // Negative (bit 63 set): add 2^64 back (at an explicit scale, ignoring ambient bcscale()).
+            return bcadd((string) $value, self::TWO_POW_64, 0);
         }
 
         return (string) $value;
