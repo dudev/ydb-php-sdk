@@ -77,6 +77,25 @@ class DecimalTypeTest extends TestCase
         self::assertSame('-0.2', DecimalType::fromParts($low, $high, 1));
     }
 
+    // bcmod()/bcdiv() take scale into account in the actual division, not just formatting - confirmed
+    // live this previously gave a low off by 1 under a nonzero ambient bcscale() for some inputs.
+    public function testToPartsIsImmuneToAmbientBcscale(): void
+    {
+        $decimal = '99999999999999.999999999';
+
+        bcscale(0);
+        $expected = DecimalType::toParts($decimal, 9);
+
+        bcscale(4);
+        try {
+            $actual = DecimalType::toParts($decimal, 9);
+        } finally {
+            bcscale(0);
+        }
+
+        self::assertSame($expected, $actual);
+    }
+
     public function testDecimalRoundTripsThroughTheSdkViaDirectConstruction(): void
     {
         $session = $this->makeSession();

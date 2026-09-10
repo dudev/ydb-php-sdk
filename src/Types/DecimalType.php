@@ -110,13 +110,13 @@ class DecimalType extends AbstractType
     {
         $unscaled = self::toUnscaled((string) $decimal, $scale);
 
-        // Split the unscaled value into low/high 64-bit unsigned halves (unscaled = high * 2^64 + low).
-        $low = bcmod($unscaled, self::TWO_POW_64);
+        // Split into low/high 64-bit halves (unscaled = high * 2^64 + low) - explicit scale, bcmod()/bcdiv() affect the actual division under ambient bcscale(), not just formatting.
+        $low = bcmod($unscaled, self::TWO_POW_64, 0);
         if (bccomp($low, '0') < 0)
         {
-            $low = bcadd($low, self::TWO_POW_64);
+            $low = bcadd($low, self::TWO_POW_64, 0);
         }
-        $high = bcdiv(bcsub($unscaled, $low), self::TWO_POW_64);
+        $high = bcdiv(bcsub($unscaled, $low, 0), self::TWO_POW_64, 0);
 
         return [self::toSigned64($low), self::toSigned64($high)];
     }
