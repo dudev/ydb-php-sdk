@@ -227,6 +227,14 @@ class Session
     }
 
     /**
+     * @return bool
+     */
+    public function isInTransaction()
+    {
+        return $this->tx_id !== null;
+    }
+
+    /**
      * @return mixed
      * @throws Exception
      */
