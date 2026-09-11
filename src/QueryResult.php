@@ -9,6 +9,9 @@ use YdbPlatform\Ydb\Types\DecimalType;
 
 class QueryResult
 {
+    // 2^64, for folding an overflowed Uint64 into its signed 64-bit bit pattern.
+    private const TWO_POW_64 = '18446744073709551616';
+
     protected $columns = [];
     protected $rows = [];
     protected $truncated = false;
@@ -251,11 +254,10 @@ class QueryResult
                         break;
 
                     case 'UINT64':
-                        $value_int = (int)$value;
-                        if ($value_int === PHP_INT_MAX && PHP_INT_SIZE === 8) {
-                            $value_int = (int)bcsub($value, '18446744073709551616', 0);
-                        }
-                        $_row[$column['name']] = $value_int;
+                        // Compare the original string (not the (int) cast result) at an explicit scale - see #148.
+                        $_row[$column['name']] = bccomp((string)$value, (string)PHP_INT_MAX) > 0
+                            ? (int)bcsub((string)$value, self::TWO_POW_64, 0)
+                            : (int)$value;
                         break;
 
                     default:
