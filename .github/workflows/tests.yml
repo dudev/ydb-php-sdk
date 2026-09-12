@@ -16,24 +16,26 @@ jobs:
   tests:
     services:
       ydb:
-        image: cr.yandex/yc/yandex-docker-local-ydb:${{ matrix.ydb-versions }}
+        image: ydbplatform/local-ydb:${{ matrix.ydb-versions }}
         ports:
           - 2135:2135
           - 2136:2136
           - 8765:8765
         volumes:
           - /tmp/ydb_certs:/ydb_certs
-        env:
-          YDB_USE_IN_MEMORY_PDISKS: true
         options: '-h localhost'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         php-versions: [ '7.2', '7.4', '8.0', '8.2' ]
-        # Verified against cr.yandex/yc/yandex-docker-local-ydb directly (`docker run --entrypoint /ydbd <tag> -V`) -
-        # avoid the `stable`/`stable-25-5` tags, both actually resolve to the ancient stable-22-5 branch despite the name.
-        ydb-versions: ['24.1.18', 'latest', '25.2.1', 'edge', 'trunk']
+        # Switched from cr.yandex/yc/yandex-docker-local-ydb: its `latest` sits on a
+        # year-old stable-24-3-11-hotfix-13 build and it stops at 25.2.1, while
+        # ydbplatform/local-ydb (used by the Go/Python/Java/.NET/Rust/Node.js SDKs)
+        # ships real numbered tags up to 26.x and an actually current `latest`.
+        # Verified port/database layout (grpc :2136, tls :2135, mon :8765, db /local,
+        # certs at /ydb_certs) matches this image's defaults, so no compose changes needed.
+        ydb-versions: ['24.4', '25.4', 'latest', 'edge', 'trunk']
     env:
       YDB_VERSION: ${{ matrix.ydb-versions }}
     steps:
