@@ -5,6 +5,7 @@ namespace YdbPlatform\Ydb;
 use Closure;
 use Exception;
 use Google\Protobuf\Duration;
+use Ydb\FeatureFlag\Status as FeatureFlagStatus;
 use Ydb\Operations\OperationParams;
 use Ydb\Table\OnlineModeSettings;
 use Ydb\Table\Query;
@@ -353,6 +354,7 @@ class Session
         $data['session_id'] = $this->session_id;
 
         $result = $this->request('ExecuteDataQuery', $data);
+        $costInfo = $this->lastCostInfo;
 
         // Picks up tx_id from a beginTx($mode, false) call, same as beginTransaction() does.
         if ($result && method_exists($result, 'getTxMeta') && $result->getTxMeta())
@@ -361,7 +363,7 @@ class Session
             $this->tx_id = $tx_id !== '' ? $tx_id : null;
         }
 
-        return $result ? new QueryResult($result) : true;
+        return $result ? new QueryResult($result, $costInfo) : true;
     }
 
     /**
@@ -407,6 +409,9 @@ class Session
                 'seconds'   => $seconds,
                 'nanos'     => $nanos
             ]));
+        }
+        if(!empty($options['reportCostInfo'])){
+            $operationParams->setReportCostInfo(FeatureFlagStatus::ENABLED);
         }
         $query->operationParams($operationParams);
 
