@@ -29,15 +29,7 @@ jobs:
       fail-fast: false
       matrix:
         php-versions: [ '7.2', '7.4', '8.0', '8.2' ]
-        # Switched from cr.yandex/yc/yandex-docker-local-ydb: its `latest` sits on a
-        # year-old stable-24-3-11-hotfix-13 build and it stops at 25.2.1, while
-        # ydbplatform/local-ydb (used by the Go/Python/Java/.NET/Rust/Node.js SDKs)
-        # ships real numbered tags up to 26.x and an actually current `latest`.
-        # Verified port/database layout (grpc :2136, tls :2135, mon :8765, db /local,
-        # certs at /ydb_certs) matches this image's defaults, so no compose changes needed.
         ydb-versions: ['24.4', '25.4', 'latest', 'edge', 'trunk']
-    env:
-      YDB_VERSION: ${{ matrix.ydb-versions }}
     steps:
       - uses: actions/checkout@v4
         name: Checkout
@@ -67,8 +59,13 @@ jobs:
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress
 
-      - name: Show YDB version
-        run: docker exec $(docker ps --latest --quiet) /ydbd -V
+      # SELECT version() exists from 24.3 (24.1 and older reject it); the value is not always
+      # numeric - e.g. `stable-25-4-1` on 25.4 and `main` on trunk - so compare it with care.
+      - name: Detect YDB version
+        run: |
+          version=$(docker exec $(docker ps --latest --quiet) /ydb -e grpc://localhost:2136 -d /local scripting yql -s "SELECT version() AS v" --format json-unicode | jq -r .v)
+          echo "YDB version: $version"
+          echo "YDB_VERSION=$version" >> "$GITHUB_ENV"
 
       - name: Create YDB User
         run: docker exec $(docker ps --latest --quiet) /ydb -e grpc://localhost:2136 -d /local scripting yql -s "CREATE USER testuser PASSWORD 'testpassword'"
